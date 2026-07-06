@@ -210,19 +210,6 @@ body {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
-.search-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.search-title {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--text-dark);
-  letter-spacing: -0.3px;
-}
 
 .icon-button {
   background: none;
@@ -526,27 +513,6 @@ body {
   background-color: #ffffff;
 }
 
-.quick-time-buttons {
-  display: flex;
-  gap: 4px;
-}
-
-.btn-quick-time {
-  flex: 1;
-  background-color: rgba(0, 0, 0, 0.04);
-  border: none;
-  border-radius: 6px;
-  padding: 4px 0;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-dark);
-  transition: background-color 0.15s;
-}
-
-.btn-quick-time:hover, .btn-quick-time:active {
-  background-color: rgba(0, 0, 0, 0.08);
-}
 
 /* Kiiruse slaider */
 .slider-label-row {
@@ -903,8 +869,26 @@ body {
   padding-bottom: 10px !important;
 }
 
+/* Kompaktse teekonna rea stiil */
+.compact-route-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-dark);
+  text-align: center;
+  padding: 6px 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.compact-route-display:active {
+  opacity: 0.7;
+}
+
 /* Klikitavuse vihje kasutajale kokkupandud päiste puhul */
-.search-panel.collapsed .search-header,
+.search-panel.collapsed .compact-route-display,
 .bottom-sheet.collapsed .drag-handle,
 .bottom-sheet.collapsed .result-card {
   cursor: pointer;

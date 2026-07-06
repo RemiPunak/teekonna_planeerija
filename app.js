@@ -34,24 +34,21 @@ function getApiUrl() {
 
 // Paneelide kokkupakkimise, avamise ja pealkirja uuendamise funktsioonid
 function updateSearchTitle() {
-  const searchTitle = document.querySelector('.search-title');
+  const compactRouteText = document.getElementById('compact-route-text');
   const searchPanel = document.querySelector('.search-panel');
-  if (!searchTitle || !searchPanel) return;
+  if (!compactRouteText || !searchPanel) return;
 
   if (searchPanel.classList.contains('collapsed')) {
     const startName = state.start.address ? state.start.address.split(',')[0].trim() : 'Vali lähtekoht';
     const endName = state.end.address ? state.end.address.split(',')[0].trim() : 'Vali sihtkoht';
-    searchTitle.textContent = `${startName} ➔ ${endName}`;
-    searchTitle.style.fontSize = '13px';
-  } else {
-    searchTitle.textContent = 'Nutikas teekond';
-    searchTitle.style.fontSize = '16px';
+    compactRouteText.textContent = `${startName} ➔ ${endName}`;
   }
 }
 
 function collapsePanels() {
   const searchPanel = document.querySelector('.search-panel');
   const bottomSheet = document.querySelector('.bottom-sheet');
+  const compactRouteDisplay = document.getElementById('compact-route-display');
   
   if (searchPanel) {
     searchPanel.classList.add('collapsed');
@@ -60,11 +57,15 @@ function collapsePanels() {
   if (bottomSheet) {
     bottomSheet.classList.add('collapsed');
   }
+  if (compactRouteDisplay) {
+    compactRouteDisplay.classList.remove('hidden');
+  }
 }
 
 function expandPanels() {
   const searchPanel = document.querySelector('.search-panel');
   const bottomSheet = document.querySelector('.bottom-sheet');
+  const compactRouteDisplay = document.getElementById('compact-route-display');
   
   if (searchPanel) {
     searchPanel.classList.remove('collapsed');
@@ -72,6 +73,9 @@ function expandPanels() {
   }
   if (bottomSheet) {
     bottomSheet.classList.remove('collapsed');
+  }
+  if (compactRouteDisplay) {
+    compactRouteDisplay.classList.add('hidden');
   }
 }
 
@@ -1344,20 +1348,6 @@ function setupEventListeners() {
     calculateRoute();
   });
 
-  // Kiired aja nihutamise nupud
-  document.querySelectorAll('.btn-quick-time').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const offsetMinutes = parseInt(btn.getAttribute('data-offset'), 10);
-      const now = new Date();
-      now.setMinutes(now.getMinutes() + offsetMinutes);
-      
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      state.arriveTime = `${hours}:${minutes}`;
-      timeInput.value = state.arriveTime;
-      calculateRoute();
-    });
-  });
 
   // Kiiruse slaideri reguleerimine ja "Graafiku järgi" klõps
   const speedSlider = document.getElementById('input-speed');
@@ -1462,11 +1452,10 @@ function setupEventListeners() {
   const dragHandle = document.querySelector('.drag-handle');
   const resultCard = document.querySelector('.result-card');
 
-  if (searchPanel) {
-    searchPanel.querySelector('.search-header').addEventListener('click', (e) => {
-      if (e.target.closest('#btn-settings')) return;
-      searchPanel.classList.toggle('collapsed');
-      updateSearchTitle();
+  const compactRouteDisplay = document.getElementById('compact-route-display');
+  if (compactRouteDisplay) {
+    compactRouteDisplay.addEventListener('click', () => {
+      expandPanels();
     });
   }
 
