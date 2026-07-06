@@ -32,6 +32,49 @@ function getApiUrl() {
 }
 
 
+// Paneelide kokkupakkimise, avamise ja pealkirja uuendamise funktsioonid
+function updateSearchTitle() {
+  const searchTitle = document.querySelector('.search-title');
+  const searchPanel = document.querySelector('.search-panel');
+  if (!searchTitle || !searchPanel) return;
+
+  if (searchPanel.classList.contains('collapsed')) {
+    const startName = state.start.address ? state.start.address.split(',')[0].trim() : 'Vali lähtekoht';
+    const endName = state.end.address ? state.end.address.split(',')[0].trim() : 'Vali sihtkoht';
+    searchTitle.textContent = `${startName} ➔ ${endName}`;
+    searchTitle.style.fontSize = '13px';
+  } else {
+    searchTitle.textContent = 'Nutikas teekond';
+    searchTitle.style.fontSize = '16px';
+  }
+}
+
+function collapsePanels() {
+  const searchPanel = document.querySelector('.search-panel');
+  const bottomSheet = document.querySelector('.bottom-sheet');
+  
+  if (searchPanel) {
+    searchPanel.classList.add('collapsed');
+    updateSearchTitle();
+  }
+  if (bottomSheet) {
+    bottomSheet.classList.add('collapsed');
+  }
+}
+
+function expandPanels() {
+  const searchPanel = document.querySelector('.search-panel');
+  const bottomSheet = document.querySelector('.bottom-sheet');
+  
+  if (searchPanel) {
+    searchPanel.classList.remove('collapsed');
+    updateSearchTitle();
+  }
+  if (bottomSheet) {
+    bottomSheet.classList.remove('collapsed');
+  }
+}
+
 // Kaardi initsialiseerimine
 function initMap() {
   // Tartu keskpunkt
@@ -586,6 +629,7 @@ async function calculateRoute() {
       console.warn("GraphQL tagastas vead:", resData.errors);
       const osrmOk = await fetchOSRMFallback();
       if (!osrmOk) fallbackStraightLineRoute();
+      collapsePanels();
       return;
     }
 
@@ -597,10 +641,12 @@ async function calculateRoute() {
       const osrmOk = await fetchOSRMFallback();
       if (!osrmOk) await fallbackStraightLineRoute();
     }
+    collapsePanels();
   } catch (error) {
     console.error("Viga teekonna planeerimisel, proovin OSRM-i:", error);
     const osrmOk = await fetchOSRMFallback();
     if (!osrmOk) await fallbackStraightLineRoute();
+    collapsePanels();
   }
 }
 
@@ -1384,6 +1430,59 @@ function setupEventListeners() {
       timetableOverlay.classList.add('hidden');
     }
   });
+
+  // Kaardi lohistamise ja suumimise kuulajad paneelide ajutiseks peitmiseks
+  let mapInteractionTimeout = null;
+  
+  if (state.map) {
+    const hidePanels = () => {
+      if (state.routePolyline) {
+        document.querySelector('.bottom-sheet')?.classList.add('panel-hidden');
+        document.querySelector('.search-panel')?.classList.add('panel-hidden');
+      }
+    };
+
+    const showPanels = () => {
+      if (mapInteractionTimeout) clearTimeout(mapInteractionTimeout);
+      mapInteractionTimeout = setTimeout(() => {
+        document.querySelector('.bottom-sheet')?.classList.remove('panel-hidden');
+        document.querySelector('.search-panel')?.classList.remove('panel-hidden');
+      }, 1000);
+    };
+
+    state.map.on('movestart', hidePanels);
+    state.map.on('zoomstart', hidePanels);
+    state.map.on('moveend', showPanels);
+    state.map.on('zoomend', showPanels);
+  }
+
+  // Käsitsi paneelide kokkupakkimine ja avamine klikkides päistel
+  const searchPanel = document.querySelector('.search-panel');
+  const bottomSheet = document.querySelector('.bottom-sheet');
+  const dragHandle = document.querySelector('.drag-handle');
+  const resultCard = document.querySelector('.result-card');
+
+  if (searchPanel) {
+    searchPanel.querySelector('.search-header').addEventListener('click', (e) => {
+      if (e.target.closest('#btn-settings')) return;
+      searchPanel.classList.toggle('collapsed');
+      updateSearchTitle();
+    });
+  }
+
+  if (dragHandle && bottomSheet) {
+    dragHandle.addEventListener('click', () => {
+      bottomSheet.classList.toggle('collapsed');
+    });
+  }
+
+  if (resultCard && bottomSheet) {
+    resultCard.addEventListener('click', () => {
+      if (bottomSheet.classList.contains('collapsed')) {
+        bottomSheet.classList.remove('collapsed');
+      }
+    });
+  }
 }
 
 // Initsialiseeri rakendus lehe laadimisel

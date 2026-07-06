@@ -100,7 +100,7 @@ body {
   /* Alumine paneel kompaktsemaks ja turvalisemaks */
   .bottom-sheet {
     gap: 12px !important;
-    padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 16px)) 12px !important;
+    padding: 8px 12px calc(28px + env(safe-area-inset-bottom, 16px)) 12px !important;
   }
 
   /* Vahelehed natuke tihedamaks */
@@ -207,6 +207,7 @@ body {
   padding: 14px;
   box-shadow: var(--shadow-premium);
   border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
 .search-header {
@@ -422,6 +423,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
 .drag-handle {
@@ -866,4 +868,44 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Paneelide automaatse ja käsitsi peitmise/kokkupakkimise klassid */
+
+/* Kaardi lohistamise ajaks peitmine */
+.bottom-sheet.panel-hidden {
+  transform: translateY(calc(100% + 20px)) !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search-panel.panel-hidden {
+  transform: translateY(-150%) !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Kokkupakitud (collapsed) olekud */
+.bottom-sheet.collapsed .transport-tabs,
+.bottom-sheet.collapsed .settings-row {
+  display: none !important;
+}
+
+.bottom-sheet.collapsed {
+  gap: 8px !important;
+}
+
+.search-panel.collapsed .route-inputs {
+  display: none !important;
+}
+
+.search-panel.collapsed {
+  padding-bottom: 10px !important;
+}
+
+/* Klikitavuse vihje kasutajale kokkupandud päiste puhul */
+.search-panel.collapsed .search-header,
+.bottom-sheet.collapsed .drag-handle,
+.bottom-sheet.collapsed .result-card {
+  cursor: pointer;
 }
