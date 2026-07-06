@@ -46,9 +46,22 @@ const server = http.createServer((req, res) => {
           body: body
         });
         
-        const data = await response.json();
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(data));
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          res.writeHead(response.status, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(data));
+        } else {
+          const text = await response.text();
+          console.error(`Mitte-JSON vastus serverilt (Status: ${response.status}):`, text);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            errors: [{
+              message: `Upstream error (${response.status}): ` + text.slice(0, 100),
+              extensions: { details: text }
+            }]
+          }));
+        }
       } catch (err) {
         console.error('Proxy viga:', err);
         res.writeHead(500, { 'Content-Type': 'application/json' });

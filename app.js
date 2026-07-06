@@ -521,19 +521,19 @@ async function calculateRoute() {
   const today = new Date();
   const dateStr = today.toISOString().split('T')[0];
 
-  // Vali transpordiviisi GraphQL argumendid
-  let modes = [{ mode: 'BICYCLE' }];
+  // Vali transpordiviisi GraphQL argumendid (väärtused kirjutatakse päringusse otse, et vältida api.peatus.ee 500 viga)
+  let modesStr = '[{ mode: BICYCLE }]';
   if (state.mode === 'TRANSIT') {
-    modes = [{ mode: 'WALK' }, { mode: 'TRANSIT' }];
+    modesStr = '[{ mode: WALK }, { mode: TRANSIT }]';
   } else if (state.mode === 'CAR') {
-    modes = [{ mode: 'CAR' }];
+    modesStr = '[{ mode: CAR }]';
   } else if (state.mode === 'WALK') {
-    modes = [{ mode: 'WALK' }];
+    modesStr = '[{ mode: WALK }]';
   }
 
   // GraphQL päring
   const query = `
-    query PlanRoute($fromLat: Float!, $fromLon: Float!, $toLat: Float!, $toLon: Float!, $intermediate: [InputCoordinates!]!, $modes: [TransportModeInput!]!, $time: String!, $date: String!) {
+    query PlanRoute($fromLat: Float!, $fromLon: Float!, $toLat: Float!, $toLon: Float!, $intermediate: [InputCoordinates!]!, $time: String!, $date: String!) {
       plan(
         from: { lat: $fromLat, lon: $fromLon }
         to: { lat: $toLat, lon: $toLon }
@@ -542,7 +542,7 @@ async function calculateRoute() {
         time: $time
         date: $date
         numItineraries: 1
-        transportModes: $modes
+        transportModes: ${modesStr}
       ) {
         itineraries {
           duration
@@ -569,7 +569,6 @@ async function calculateRoute() {
     toLat: state.end.lat,
     toLon: state.end.lon,
     intermediate: intermediate,
-    modes: modes,
     time: state.arriveTime + ":00",
     date: dateStr
   };
@@ -1160,7 +1159,7 @@ async function showTimetablePopup() {
   const currentTime = `${currentHours}:${currentMinutes}:00`;
 
   const query = `
-    query GetTimetable($fromLat: Float!, $fromLon: Float!, $toLat: Float!, $toLon: Float!, $modes: [TransportModeInput!]!, $time: String!, $date: String!) {
+    query GetTimetable($fromLat: Float!, $fromLon: Float!, $toLat: Float!, $toLon: Float!, $time: String!, $date: String!) {
       plan(
         from: { lat: $fromLat, lon: $fromLon }
         to: { lat: $toLat, lon: $toLon }
@@ -1168,7 +1167,7 @@ async function showTimetablePopup() {
         time: $time
         date: $date
         numItineraries: 5
-        transportModes: $modes
+        transportModes: [{ mode: WALK }, { mode: TRANSIT }]
       ) {
         itineraries {
           duration
@@ -1191,7 +1190,6 @@ async function showTimetablePopup() {
     fromLon: state.start.lon,
     toLat: state.end.lat,
     toLon: state.end.lon,
-    modes: [{ mode: 'WALK' }, { mode: 'TRANSIT' }],
     time: currentTime,
     date: dateStr
   };
