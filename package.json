@@ -1,0 +1,16 @@
+{
+  "name": "smart-departure",
+  "version": "1.0.0",
+  "description": "Nutikas lahkumisaja planeerija",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test-integration.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
