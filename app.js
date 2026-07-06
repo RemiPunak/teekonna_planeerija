@@ -23,9 +23,9 @@ let state = {
 const COORDS_SUDAMEKODU = { lat: 58.39990, lon: 26.75319, address: 'Tartu Südamekodu, 13' };
 const COORDS_RAEKOJA = { lat: 58.38021, lon: 26.72241, address: 'Tartu Raekoja plats' };
 
-// Abifunktsioon API URL-i valimiseks vastavalt protokollile
+// Abifunktsioon API URL-i valimiseks vastavalt protokollile ja keskkonnale
 function getApiUrl() {
-  if (window.location.protocol === 'file:') {
+  if (window.location.protocol === 'file:' || window.location.hostname.includes('github.io')) {
     return 'https://api.peatus.ee/routing/v1/routers/estonia/index/graphql';
   }
   return '/api/peatus-ee';
