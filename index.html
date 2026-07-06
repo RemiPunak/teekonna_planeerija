@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Smart Departure - Nutikas lahkumisaeg</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Rakenduse stiil -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- Desktop Wrapper, et näidata telefoni mockup-i lauaarvutis, kuid mobiilis kuvada täisekraanilt -->
+  <div class="phone-wrapper">
+    <div class="phone-container">
+
+
+      <!-- Kaardi ala -->
+      <div id="map"></div>
+
+      <!-- Ülemine otsingupaneel (ujuv kaart) -->
+      <div class="search-panel">
+        <div class="search-header">
+          <span class="search-title">Nutikas teekond</span>
+          <button id="btn-settings" class="icon-button" title="Seaded">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </button>
+        </div>
+        
+        <div class="route-inputs">
+          <!-- Lähtekoht -->
+          <div class="input-row start-row">
+            <span class="dot-indicator start-dot"></span>
+            <div class="input-container">
+              <input type="text" id="input-start" placeholder="Vali lähtekoht..." autocomplete="off">
+              <div id="start-suggestions" class="suggestions-box hidden"></div>
+            </div>
+            <button id="btn-gps" class="small-icon-button" title="Minu asukoht">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm0 18a8 8 0 118-8 8 8 0 01-8 8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+
+          <!-- Dünaamilised vahepunktid -->
+          <div id="waypoints-container"></div>
+
+          <!-- Sihtkoht -->
+          <div class="input-row end-row">
+            <span class="dot-indicator end-dot"></span>
+            <div class="input-container">
+              <input type="text" id="input-end" placeholder="Vali sihtkoht..." autocomplete="off">
+              <div id="end-suggestions" class="suggestions-box hidden"></div>
+            </div>
+            <button id="btn-add-waypoint" class="small-icon-button" title="Lisa vahepunkt">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kaardi juhtnupud (ujuvad paremal) -->
+      <div class="map-controls">
+        <button id="btn-recenter" class="map-control-button" title="Keskesta kaart">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4 12H2M22 12h-2"/><circle cx="12" cy="12" r="7"/></svg>
+        </button>
+      </div>
+
+      <!-- Alumine paneel (teekonna valik ja tulemus) -->
+      <div class="bottom-sheet">
+        <div class="drag-handle"></div>
+        
+        <!-- Transpordivahendi valikud -->
+        <div class="transport-tabs">
+          <button class="tab-button active" data-mode="BICYCLE">
+            <div class="tab-icon">
+              <!-- Jalgratas -->
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 100-2 1 1 0 000 2zm-3 11.5L8.5 12H15L12 17.5zM12 7.5V12M15 4h-4M5.5 17.5L9.5 9h5.5l3.5 8.5"/></svg>
+            </div>
+            <span class="tab-label">Ratas</span>
+            <span id="tab-time-bicycle" class="tab-time">-- min</span>
+          </button>
+          <button class="tab-button" data-mode="TRANSIT">
+            <div class="tab-icon">
+              <!-- Buss -->
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M6 19v2M18 19v2M4 7h16M8 15h2M14 15h2"/></svg>
+            </div>
+            <span class="tab-label">Buss</span>
+            <span id="tab-time-transit" class="tab-time">-- min</span>
+          </button>
+          <button class="tab-button" data-mode="CAR">
+            <div class="tab-icon">
+              <!-- Auto -->
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 001 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            </div>
+            <span class="tab-label">Auto</span>
+            <span id="tab-time-car" class="tab-time">-- min</span>
+          </button>
+          <button class="tab-button" data-mode="WALK">
+            <div class="tab-icon">
+              <!-- Kõndimine -->
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 4a1 1 0 100-2 1 1 0 000 2zM12 12V8M13 12L9.5 22M13 12l2.5 10M9 8h6M6 8l3 4"/></svg>
+            </div>
+            <span class="tab-label">Jalgsi</span>
+            <span id="tab-time-walk" class="tab-time">-- min</span>
+          </button>
+        </div>
+
+        <!-- Saabumise kellaaja sisend ja kiiruse skaala -->
+        <div class="settings-row">
+          <div class="setting-col">
+            <label for="input-arrive-time">Saabumisaeg</label>
+            <div class="time-input-wrapper">
+              <input type="time" id="input-arrive-time">
+            </div>
+            <div class="quick-time-buttons">
+              <button class="btn-quick-time" data-offset="30">+30m</button>
+              <button class="btn-quick-time" data-offset="60">+1h</button>
+              <button class="btn-quick-time" data-offset="120">+2h</button>
+            </div>
+          </div>
+
+          <div class="setting-col">
+            <div class="slider-label-row">
+              <label for="input-speed">Liikumiskiirus</label>
+              <span id="speed-display">25 km/h</span>
+            </div>
+            <input type="range" id="input-speed" min="5" max="50" value="25" step="1">
+            <div class="slider-ticks">
+              <span>5 km/h</span>
+              <span>50 km/h</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Peamine tulemuskaart -->
+        <div class="result-card">
+          <div class="result-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="result-info">
+            <span class="result-label">Soovituslik lahkumisaeg</span>
+            <span id="result-departure-time" class="result-value">--:--</span>
+            <span id="result-duration" class="result-meta">Vali sihtkoht teekonna arvutamiseks</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Seadete paneel (Modal overlay) -->
+      <div id="settings-overlay" class="overlay hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Rakenduse vaikesätted</h3>
+            <button id="btn-close-settings" class="close-button">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="default-start">Vaikimisi algusaadress (GPS puudumisel)</label>
+              <input type="text" id="default-start" value="Tartu Südamekodu, 13" autocomplete="off">
+              <div id="default-start-suggestions" class="suggestions-box hidden"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="default-end">Vaikimisi sihtkoht</label>
+              <input type="text" id="default-end" value="Tartu Raekoja plats" autocomplete="off">
+              <div id="default-end-suggestions" class="suggestions-box hidden"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="default-mode">Vaikimisi transpordivahend</label>
+              <select id="default-mode">
+                <option value="BICYCLE">Jalgratas</option>
+                <option value="TRANSIT">Linnaliini buss</option>
+                <option value="CAR">Auto</option>
+                <option value="WALK">Jalgsi kõndimine</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="default-speed">Vaikekiirus rattale (km/h)</label>
+              <input type="number" id="default-speed" min="5" max="50" value="25">
+            </div>
+
+            <button id="btn-save-defaults" class="primary-button">Salvesta seaded</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sõiduplaani paneel (Modal overlay) -->
+      <div id="timetable-overlay" class="overlay hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Busside väljumisajad täna</h3>
+            <button id="btn-close-timetable" class="close-button">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div id="timetable-list" class="timetable-list">
+              <!-- Bussigraafik genereeritakse dünaamiliselt -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Rakenduse loogika -->
+  <script src="app.js"></script>
+</body>
+</html>
